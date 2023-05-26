@@ -53,7 +53,7 @@ def distancia(celula_1, celula_2):
 
 def heuristica(celula, goal):
   # cálculo da distância manhattan de duas células
-  return abs(celula.y - goal.y) + abs(celula.y - goal.y)
+  return abs(celula.y - goal.y) + abs(celula.x - goal.x)
 
 
 def esta_contido(lista, celula):
@@ -332,8 +332,8 @@ def main():
     i += 1
     #SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     #random.seed(SEED)
-    N_LINHAS = 20
-    N_COLUNAS = 30
+    N_LINHAS = 200
+    N_COLUNAS = 300
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
     """
@@ -346,7 +346,7 @@ def main():
                         INICIO,
                         GOAL,
                         step_time_miliseconds=20,
-                        zoom=5)
+                        zoom=10)
 
     #----------------------------------------
     # BFS Search
