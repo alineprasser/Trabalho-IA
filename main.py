@@ -1,8 +1,9 @@
-import random
+import time  # utilizado para calcular o tempo decorrido da execução dos algoritmos
+import random  # utilizado para gerar labirintos aleatórios
 
-from collections import deque
-from viewer import MazeViewer
-from math import inf, sqrt
+from collections import deque  # utilizado para as operações com fila/pilha
+from viewer import MazeViewer  # utilizado para a visualização do labirinto gerado
+from math import inf, sqrt  # utilizado para operações matemáticas
 
 
 def gera_labirinto(n_linhas, n_colunas, inicio, goal):
@@ -10,7 +11,7 @@ def gera_labirinto(n_linhas, n_colunas, inicio, goal):
   labirinto = [[0] * n_colunas for _ in range(n_linhas)]
 
   # adiciona celulas ocupadas em locais aleatorios de
-  # forma que 25% do labirinto esteja ocupado
+  # forma que 50% do labirinto esteja ocupado
   numero_de_obstaculos = int(0.50 * n_linhas * n_colunas)
   for _ in range(numero_de_obstaculos):
     linha = random.randint(0, n_linhas - 1)
@@ -28,29 +29,35 @@ def gera_labirinto(n_linhas, n_colunas, inicio, goal):
 class Celula:
 
   def __init__(self, y, x, anterior):
-    self.y = y
-    self.x = x
-    self.anterior = anterior
-    self.custo = 0
+    self.y = y  # localização vertical
+    self.x = x  # localização horizontal
+    self.anterior = anterior  # memória de seu antecessor
+    self.custo = 0  # memória de seu custo acumulado
 
 
 def insere_ordenado(lista, valor):
+  # adiciona o valor à lista
   lista.append(valor)
+  # gera uma lista nova ordenando os valores pelo atributo custo
+  # fazendo com que os menores custos estejam no início da lista
   lista_ordenada = sorted(lista, key=lambda celula: celula.custo)
   return deque(lista_ordenada)
 
 
 def distancia(celula_1, celula_2):
+  # cálculo da distância euclidiana de duas células
   dx = celula_1.x - celula_2.x
   dy = celula_1.y - celula_2.y
   return sqrt(dx**2 + dy**2)
 
 
-def heuristica(node, goal):
-  return abs(node.y - goal.y) + abs(node.x - goal.x)
+def heuristica(celula, goal):
+  # cálculo da distância manhattan de duas células
+  return abs(celula.y - goal.y) + abs(celula.y - goal.y)
 
 
 def esta_contido(lista, celula):
+  # valida se a célula já foi inserida dentro da lista
   for elemento in lista:
     if (elemento.y == celula.y) and (elemento.x == celula.x):
       return True
@@ -58,17 +65,20 @@ def esta_contido(lista, celula):
 
 
 def custo_caminho(caminho):
+  # calcula o custo do caminho fornecido
   if len(caminho) == 0:
     return inf
 
   custo_total = 0
   for i in range(1, len(caminho)):
+    # o custo total se dará pela soma das distâncias de cada célula e seu próximo vizinho
     custo_total += distancia(caminho[i].anterior, caminho[i])
 
   return custo_total
 
 
 def obtem_caminho(goal):
+  # retorna o caminho final
   caminho = []
 
   celula_atual = goal
@@ -84,16 +94,24 @@ def obtem_caminho(goal):
 
 
 def celulas_vizinhas_livres(celula_atual, labirinto):
-  # generate neighbors of the current state
+  # gera os vizinhos da célula atual
   vizinhos = [
-    Celula(y=celula_atual.y - 1, x=celula_atual.x - 1, anterior=celula_atual),
-    Celula(y=celula_atual.y + 0, x=celula_atual.x - 1, anterior=celula_atual),
-    Celula(y=celula_atual.y + 1, x=celula_atual.x - 1, anterior=celula_atual),
-    Celula(y=celula_atual.y - 1, x=celula_atual.x + 0, anterior=celula_atual),
-    Celula(y=celula_atual.y + 1, x=celula_atual.x + 0, anterior=celula_atual),
-    Celula(y=celula_atual.y + 1, x=celula_atual.x + 1, anterior=celula_atual),
-    Celula(y=celula_atual.y + 0, x=celula_atual.x + 1, anterior=celula_atual),
-    Celula(y=celula_atual.y - 1, x=celula_atual.x + 1, anterior=celula_atual),
+    Celula(y=celula_atual.y - 1, x=celula_atual.x - 1,
+           anterior=celula_atual),  # vizinho diagonal inferior esquerda
+    Celula(y=celula_atual.y + 0, x=celula_atual.x - 1,
+           anterior=celula_atual),  # vizinho diretamente à esquerda
+    Celula(y=celula_atual.y + 1, x=celula_atual.x - 1,
+           anterior=celula_atual),  # vizinho diagonal superior esquerda
+    Celula(y=celula_atual.y - 1, x=celula_atual.x + 0,
+           anterior=celula_atual),  # vizinho diretamente abaixo
+    Celula(y=celula_atual.y + 1, x=celula_atual.x + 0,
+           anterior=celula_atual),  # vizinho diretamente acima
+    Celula(y=celula_atual.y + 1, x=celula_atual.x + 1,
+           anterior=celula_atual),  # vizinho diagonal superior direita
+    Celula(y=celula_atual.y + 0, x=celula_atual.x + 1,
+           anterior=celula_atual),  # vizinho diretamente à direita
+    Celula(y=celula_atual.y - 1, x=celula_atual.x + 1,
+           anterior=celula_atual),  # vizinho diagonal inferior direita
   ]
 
   # seleciona as celulas livres
@@ -119,7 +137,7 @@ def breadth_first_search(labirinto, inicio, goal, viewer):
   # adiciona o no inicial na fronteira
   fronteira.append(inicio)
 
-  # variavel para armazenar o goal quando ele for encontrado.
+  # variavel para armazenar o goal quando ele for encontrado
   goal_encontrado = None
 
   # Repete enquanto nos nao encontramos o goal e ainda
@@ -148,7 +166,7 @@ def breadth_first_search(labirinto, inicio, goal, viewer):
     expandidos.add(no_atual)
 
     viewer.update(generated=fronteira, expanded=expandidos)
-    viewer.pause()
+    # viewer.pause()
 
   caminho = obtem_caminho(goal_encontrado)
   custo = custo_caminho(caminho)
@@ -193,7 +211,7 @@ def depth_first_search(labirinto, inicio, goal, viewer):
     expandidos.add(no_atual)
 
     viewer.update(generated=fronteira, expanded=expandidos)
-    viewer.pause()
+    # viewer.pause()
 
   caminho = obtem_caminho(goal_encontrado)
   custo = custo_caminho(caminho)
@@ -233,18 +251,20 @@ def a_star_search(labirinto, inicio, goal, viewer):
         if (not esta_contido(expandidos, v)) and (not esta_contido(
             fronteira,
             v)):  # para cada vizinho, calcula as distâncias e as heurísticas
-          # faz o cálculo do custo considerando a heurística
-          custo_g = distancia(v, inicio)
-          custo_h = heuristica(v, goal)
+          # faz o cálculo do custo considerando f(x) = g(x) + h(x)
+          custo_g = distancia(v, inicio)  # distância do nó atual e o inicial
+          custo_h = distancia(v, goal)  # distÂncia do nó atual e o objetivo
           custo_f = custo_g + custo_h
           v.custo = custo_f
 
-          fronteira = insere_ordenado(fronteira, v)
+          fronteira = insere_ordenado(
+            fronteira, v
+          )  # insere de forma ordenada para manter o menor custo no início da lista
 
     expandidos.add(no_atual)
 
     viewer.update(generated=fronteira, expanded=expandidos)
-    viewer.pause()
+    # viewer.pause()
 
   caminho = obtem_caminho(goal_encontrado)
   custo = custo_caminho(caminho)
@@ -286,7 +306,7 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
             v)):  # para cada vizinho, calcula as distâncias e as heurísticas
           # faz o cálculo do custo considerando a heurística = 0
           custo_g = distancia(v, inicio)
-          custo_h = 0
+          custo_h = 0  # a heurística = 0 faz com que apenas a distância já percorrida seja levada em consideração
           custo_f = custo_g + custo_h
           v.custo = custo_f
 
@@ -295,7 +315,7 @@ def uniform_cost_search(labirinto, inicio, goal, viewer):
     expandidos.add(no_atual)
 
     viewer.update(generated=fronteira, expanded=expandidos)
-    viewer.pause()
+    # viewer.pause()
 
   caminho = obtem_caminho(goal_encontrado)
   custo = custo_caminho(caminho)
@@ -312,8 +332,8 @@ def main():
     i += 1
     #SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     #random.seed(SEED)
-    N_LINHAS = 10
-    N_COLUNAS = 20
+    N_LINHAS = 200
+    N_COLUNAS = 300
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
     """
@@ -326,43 +346,49 @@ def main():
                         INICIO,
                         GOAL,
                         step_time_miliseconds=20,
-                        zoom=40)
+                        zoom=5)
 
     #----------------------------------------
     # BFS Search
     #----------------------------------------
     viewer._figname = "BFS"
+    start_time = time.time()
     caminho, custo_total, expandidos = \
             breadth_first_search(labirinto, INICIO, GOAL, viewer)
+    elapsed_time = time.time() - start_time
 
     if len(caminho) == 0:
       print("Goal é inalcançavel neste labirinto.")
 
-    print(f"BFS:"
+    print(f"BFS:\n"
+          f"\tTempo de execução: {elapsed_time}.\n"
+          f"\tNumero total de nos expandidos: {len(expandidos)}.\n"
           f"\tCusto total do caminho: {custo_total}.\n"
-          f"\tNumero de passos: {len(caminho)-1}.\n"
-          f"\tNumero total de nos expandidos: {len(expandidos)}.\n\n")
+          f"\tTamanho do caminho: {len(caminho)-1}.\n\n")
 
     viewer.update(path=caminho)
-    viewer.pause()
+    # viewer.pause()
 
     #----------------------------------------
     # DFS Search
     #----------------------------------------
     viewer._figname = "DFS"
+    start_time = time.time()
     caminho, custo_total, expandidos = \
             depth_first_search(labirinto, INICIO, GOAL, viewer)
+    elapsed_time = time.time() - start_time
 
     if len(caminho) == 0:
       print("Goal é inalcançavel neste labirinto.")
 
-    print(f"DFS:"
+    print(f"DFS:\n"
+          f"\tTempo de execução: {elapsed_time}.\n"
+          f"\tNumero total de nos expandidos: {len(expandidos)}.\n"
           f"\tCusto total do caminho: {custo_total}.\n"
-          f"\tNumero de passos: {len(caminho)-1}.\n"
-          f"\tNumero total de nos expandidos: {len(expandidos)}.\n\n")
+          f"\tTamanho do caminho: {len(caminho)-1}.\n\n")
 
     viewer.update(path=caminho)
-    viewer.pause()
+    # viewer.pause()
 
     #----------------------------------------
     # A-Star Search
@@ -372,39 +398,47 @@ def main():
     # f(n) = g(n) + h(n)
     # pra ser admissivel o h tem que ser menor do que o valor real
 
-    viewer._figname = "A-Star"
+    viewer.update(path=caminho)
+    # viewer.pause()
+    viewer._figname = "A-Star Euclidiana"
+    start_time = time.time()
     caminho, custo_total, expandidos = \
             a_star_search(labirinto, INICIO, GOAL, viewer)
+    elapsed_time = time.time() - start_time
 
     if len(caminho) == 0:
       print("Goal é inalcançavel neste labirinto.")
 
-    print(f"A Star:"
+    print(f"A Star:\n"
+          f"\tTempo de execução: {elapsed_time}.\n"
+          f"\tNumero total de nos expandidos: {len(expandidos)}.\n"
           f"\tCusto total do caminho: {custo_total}.\n"
-          f"\tNumero de passos: {len(caminho)-1}.\n"
-          f"\tNumero total de nos expandidos: {len(expandidos)}.\n\n")
+          f"\tTamanho do caminho: {len(caminho)-1}.\n\n")
 
     viewer.update(path=caminho)
-    viewer.pause()
+    # viewer.pause()
 
     #----------------------------------------
     # Uniform Cost Search (Obs: opcional)
     #----------------------------------------
 
     viewer._figname = "UniformCost"
+    start_time = time.time()
     caminho, custo_total, expandidos = \
             uniform_cost_search(labirinto, INICIO, GOAL, viewer)
+    elapsed_time = time.time() - start_time
 
     if len(caminho) == 0:
       print("Goal é inalcançavel neste labirinto.")
 
-    print(f"Uniform Cost:"
+    print(f"Uniform Cost:\n"
+          f"\tTempo de execução: {elapsed_time}.\n"
+          f"\tNumero total de nos expandidos: {len(expandidos)}.\n"
           f"\tCusto total do caminho: {custo_total}.\n"
-          f"\tNumero de passos: {len(caminho)-1}.\n"
-          f"\tNumero total de nos expandidos: {len(expandidos)}.\n\n")
+          f"\tTamanho do caminho: {len(caminho)-1}.\n\n")
 
     viewer.update(path=caminho)
-    viewer.pause()
+    # viewer.pause()
 
   print("OK! Pressione alguma tecla pra finalizar...")
   input()
