@@ -253,7 +253,7 @@ def a_star_search(labirinto, inicio, goal, viewer):
             v)):  # para cada vizinho, calcula as distâncias e as heurísticas
           # faz o cálculo do custo considerando f(x) = g(x) + h(x)
           custo_g = distancia(v, inicio)  # distância do nó atual e o inicial
-          custo_h = distancia(v, goal)  # distÂncia do nó atual e o objetivo
+          custo_h = heuristica(v, goal)  # distÂncia do nó atual e o objetivo
           custo_f = custo_g + custo_h
           v.custo = custo_f
 
@@ -332,8 +332,8 @@ def main():
     i += 1
     #SEED = 42  # coloque None no lugar do 42 para deixar aleatorio
     #random.seed(SEED)
-    N_LINHAS = 200
-    N_COLUNAS = 300
+    N_LINHAS = 20
+    N_COLUNAS = 30
     INICIO = Celula(y=0, x=0, anterior=None)
     GOAL = Celula(y=N_LINHAS - 1, x=N_COLUNAS - 1, anterior=None)
     """
@@ -400,7 +400,7 @@ def main():
 
     viewer.update(path=caminho)
     # viewer.pause()
-    viewer._figname = "A-Star Euclidiana"
+    viewer._figname = "A-Star"
     start_time = time.time()
     caminho, custo_total, expandidos = \
             a_star_search(labirinto, INICIO, GOAL, viewer)
